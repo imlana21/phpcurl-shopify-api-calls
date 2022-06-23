@@ -1,5 +1,5 @@
 <?php
-require_once './src/include/shopify.php';
+require_once './include/shopify.php';
 
 $shopify = new Shopify();
 
@@ -15,5 +15,3 @@ $shopify->set_method('GET');
 $shopify->set_endpoint('products/7725227606224');
 
 $shopify->api_calls();
-
-print_r(getenv());

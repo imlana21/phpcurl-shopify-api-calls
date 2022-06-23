@@ -5,7 +5,7 @@ class Shopify
   public $method;
   public $config;
   public $endPoint;
-  public $query = [];
+  public $query;
 
   function set_config(
     string $apiKey,
@@ -79,16 +79,19 @@ class Shopify
 
     if ($this->method != 'GET' && in_array($this->method, ['POST', 'PUT'])) {
       if (is_array($this->query)) {
-        curl_setopt($curlHandle, CURLOPT_POSTFIELDS, $this->query);
+        curl_setopt($curlHandle, CURLOPT_POSTFIELDS, json_encode($this->query));
       }
     }
 
-
     $response = curl_exec($curlHandle);
+    $errorNumber = curl_errno($curlHandle);
+    $errorMsg = curl_error($curlHandle);
 
-    if (curl_errno($curlHandle)) {
+    curl_close($curlHandle);
+
+    if ($errorNumber) {
       /* Error Handling */
-      return curl_error($curlHandle);
+      return $errorMsg;
     } else {
       // Parsing out body and header
       $response = preg_split("/\r\n\r\n|\n\n|\r\r/", $response, 2);
@@ -110,7 +113,7 @@ class Shopify
 
       return [
         'headers' => $headers,
-        'response' => json_decode($response[1])
+        'response' => json_decode($response[1], true)
       ];
     }
   }
