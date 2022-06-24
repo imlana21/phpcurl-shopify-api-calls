@@ -6,8 +6,9 @@ class Shopify
   public $config;
   public $endPoint;
   public $query;
+  public $graphql;
 
-  function set_config(
+  function config(
     string $apiKey,
     string $secretKey,
     string $shopName,
@@ -23,25 +24,25 @@ class Shopify
     ];
   }
 
-  function set_endpoint(string $endPoint)
+  function endpoint(string $endPoint)
   {
     $this->endPoint = $endPoint;
   }
 
-  function set_method(string $method)
+  function method(string $method)
   {
     $this->method = $method;
   }
 
-  function set_query(array $query) {
+  function query(array $query) {
     $this->query = $query;
   }
 
-  function api_calls()
+  function rest_calls()
   {
     $url = "https://" . $this->config['apiKey'] . ":" . $this->config['secretKey'];
     $url .= "@" . $this->config['shopName'] . ".myshopify.com/admin/api/";
-    $url .= $this->config['apiVersion'] . "/" . $this->endPoint . ".json";
+    $url .= $this->config['apiVersion'] . "/" . $this->endPoint;
 
     /* Init Curl */
     $curlHandle = curl_init($url);
@@ -53,7 +54,7 @@ class Shopify
     // to follow any "Location: " header that the server sends as part of the HTTP header
     curl_setopt($curlHandle, CURLOPT_FOLLOWLOCATION, TRUE);
     // Set User Agent
-    curl_setopt($curlHandle, CURLOPT_USERAGENT, 'My New Shopify App v.1');
+    curl_setopt($curlHandle, CURLOPT_USERAGENT, 'Shopify App');
     // The maximum amount of HTTP redirections to follow
     curl_setopt($curlHandle, CURLOPT_MAXREDIRS, 3);
     // to stop cURL from verifying the peer's certificate
@@ -76,13 +77,21 @@ class Shopify
       return error_log("Please set Admin Access Token", 401);
     }
 
-
     if ($this->method != 'GET' && in_array($this->method, ['POST', 'PUT'])) {
       if (is_array($this->query)) {
         curl_setopt($curlHandle, CURLOPT_POSTFIELDS, json_encode($this->query));
       }
     }
 
+    // if(!is_null($this->query)) {
+    //   if (is_array($this->query)) {
+    //     curl_setopt($curlHandle, CURLOPT_POSTFIELDS, json_encode($this->query));
+    //   } else {
+    //     return error_log("Search query must be of type php array");
+    //   }
+    // } 
+
+    // print_r(json_encode($this->query));
     $response = curl_exec($curlHandle);
     $errorNumber = curl_errno($curlHandle);
     $errorMsg = curl_error($curlHandle);
