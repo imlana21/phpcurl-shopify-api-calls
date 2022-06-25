@@ -23,7 +23,7 @@ function getById($shopify, $id)
   $response = $api_call['response'];
 
   return $response['product'];
-}
+} 
 
 /* Get All Products using Variant Level */
 function getAll($shopify)
@@ -40,7 +40,7 @@ function getAll($shopify)
 }
 
 /* Update Product Stock */
-function updateStock($shopify, $sku)
+function updateStockBySku($shopify, $sku)
 {
   $products = getProductsVariants($shopify);
   $result = [];
