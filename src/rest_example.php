@@ -10,6 +10,9 @@ $shopify = new Shopify(
   'admin_api_access_token'
 );
 
+// Using json for rest api
+$shopify->setContentType('json');
+
 /* Get Product By ID using Variants Level */
 function getById($shopify, $id)
 {
@@ -17,7 +20,7 @@ function getById($shopify, $id)
 
   $shopify->endpoint('variants/' . $id . '.json');
 
-  $api_call = $shopify->rest_calls();
+  $api_call = $shopify->calls();
   $response = $api_call['response'];
 
   return $response['product'];
@@ -31,7 +34,7 @@ function getAll($shopify)
 
   $shopify->endpoint('variants.json');
 
-  $api_call = $shopify->rest_calls();
+  $api_call = $shopify->calls();
   $response = $api_call['response'];
 
   return $response['variants'];
@@ -50,7 +53,7 @@ function updateStockBySku($shopify, $sku)
 
       // Get location id
       $shopify->endpoint('inventory_levels.json?inventory_item_ids=' . $inventory_item_id);
-      $result = $shopify->rest_calls();
+      $result = $shopify->calls();
       $location_id = $result['response']['inventory_levels'][0]['location_id'];
 
       // Update Stock
@@ -63,7 +66,7 @@ function updateStockBySku($shopify, $sku)
         ]
       );
       $shopify->endpoint('inventory_levels/set.json');
-      $result = $shopify->rest_calls();
+      $result = $shopify->calls();
     }
   }
 

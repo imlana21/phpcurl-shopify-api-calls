@@ -2,13 +2,14 @@
 
 class Shopify
 {
-  public $method;
-  public $config;
-  public $endPoint;
-  public $query;
-  public $graphql;
+  protected $method;
+  protected $config;
+  protected $endPoint;
+  protected $query;
+  protected $graphql;
+  protected $headerContentType;
 
-  function config(
+  function __construct(
     string $apiKey,
     string $secretKey,
     string $shopName,
@@ -24,25 +25,38 @@ class Shopify
     ];
   }
 
-  function endpoint(string $endPoint)
+  function setEndpoint(string $endPoint)
   {
     $this->endPoint = $endPoint;
   }
 
-  function method(string $method)
+  function setMethod(string $method)
   {
     $this->method = $method;
   }
 
-  function query(array $query) {
+  function setQuery($query)
+  {
     $this->query = $query;
   }
 
-  function rest_calls()
+  function setContentType(string $type)
   {
-    $url = "https://" . $this->config['apiKey'] . ":" . $this->config['secretKey'];
-    $url .= "@" . $this->config['shopName'] . ".myshopify.com/admin/api/";
-    $url .= $this->config['apiVersion'] . "/" . $this->endPoint;
+    $this->headerContentType = $type;
+  }
+
+  function calls()
+  {
+    $url = "https://" . $this->config['apiKey'] . ":" . $this->config['secretKey'] . "@";
+    $url .= $this->config['shopName'] . ".myshopify.com/admin/api/" . $this->config['apiVersion'] . "/";
+
+    if ($this->headerContentType === 'graphql') {
+      $url .= 'graphql.json';
+    } else if ($this->headerContentType === 'json') {
+      $url .= $this->endPoint;
+    } else {
+      return error_log('Only supported json & graphql type for shopify body');
+    }
 
     /* Init Curl */
     $curlHandle = curl_init($url);
@@ -69,7 +83,7 @@ class Shopify
     // Set Header
     if ($this->config['adminAccessToken'] != null || $this->config['adminAccessToken'] != '') {
       $curlHeader = [
-        "Content-Type: application/json",
+        "Content-Type: application/" . $this->headerContentType,
         "X-Shopify-Access-Token: " . $this->config['adminAccessToken']
       ];
       curl_setopt($curlHandle, CURLOPT_HTTPHEADER, $curlHeader);
@@ -113,7 +127,7 @@ class Shopify
         $headers[trim($h[0])] = trim($h[1]);
         if ($h[0] == 'Content-Security-Policy') {
           $temp = [];
-          for($i = 1; $i < count($h); $i++) {
+          for ($i = 1; $i < count($h); $i++) {
             array_push($temp, $h[$i]);
           }
           $headers[trim($h[0])] = implode(': ', $temp);
