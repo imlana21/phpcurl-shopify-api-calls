@@ -91,10 +91,20 @@ class Shopify
       return error_log("Please set Admin Access Token", 401);
     }
 
-    if ($this->method != 'GET' && in_array($this->method, ['POST', 'PUT'])) {
-      if (is_array($this->query)) {
-        curl_setopt($curlHandle, CURLOPT_POSTFIELDS, json_encode($this->query));
+    if($this->headerContentType == 'graphql') {
+      if ($this->method == 'POST' && gettype($this->query) == 'string') {
+        curl_setopt($curlHandle, CURLOPT_POSTFIELDS, $this->query);
+      } else {
+        return error_log("Method or Query type not Allowed", 405);
       }
+    } else {
+      if (in_array($this->method, ['POST', 'PUT'])) {
+        if (is_array($this->query)) {
+          curl_setopt($curlHandle, CURLOPT_POSTFIELDS, json_encode($this->query));
+        } else {
+          return error_log('For JSON Content type, the query must use an Array', 400);
+        }
+      }      
     }
 
     // if(!is_null($this->query)) {
